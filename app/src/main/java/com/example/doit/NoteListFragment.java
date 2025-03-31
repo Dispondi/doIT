@@ -2,11 +2,16 @@ package com.example.doit;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.example.doit.databinding.FragmentNoteListBinding;
+import com.example.doit.entity.NoteEntity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -56,9 +61,20 @@ public class NoteListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_note_list, container, false);
+        FragmentNoteListBinding noteListBinding = FragmentNoteListBinding.inflate(inflater, container, false);
+        View view = noteListBinding.getRoot();
+        noteListBinding.noteFab.setOnClickListener(v -> createNewNote(view));
+
+        return view;
+    }
+
+    private void createNewNote(View view) {
+        NoteEntity newNote = new NoteEntity(NoteEntity.DEFAULT_NAME, NoteEntity.DEFAULT_CONTENT);
+        Bundle bundle = new Bundle();
+        bundle.putStringArray(NoteFragment.BUNDLE_KEY, new String[] {newNote.getName(), newNote.getContent()});
+        Navigation.findNavController(view).navigate(R.id.action_noteListFragment_to_noteFragment, bundle);
     }
 }
