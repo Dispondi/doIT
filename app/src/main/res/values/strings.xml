@@ -3,4 +3,9 @@
     <string name="notes_label">Записи</string>
     <string name="plans_label">Планы</string>
     <string name="setting_label">Настройки</string>
+    <string name="search_hint">Искать записи</string>
+    <string name="notecard_edit_button_label">Редактировать</string>
+    <string name="notecard_delete_button_label">Удалить</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
