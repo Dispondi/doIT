@@ -2,23 +2,18 @@ package com.example.doit;
 
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.doit.databinding.FragmentNoteListBinding;
-import com.example.doit.entity.NoteEntity;
-
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link NoteListFragment#newInstance} factory method to
+ * Use the {@link RegistrationFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NoteListFragment extends Fragment {
+public class RegistrationFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -29,7 +24,7 @@ public class NoteListFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public NoteListFragment() {
+    public RegistrationFragment() {
         // Required empty public constructor
     }
 
@@ -39,11 +34,11 @@ public class NoteListFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment NoteListFragment.
+     * @return A new instance of fragment RegistrationFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static NoteListFragment newInstance(String param1, String param2) {
-        NoteListFragment fragment = new NoteListFragment();
+    public static RegistrationFragment newInstance(String param1, String param2) {
+        RegistrationFragment fragment = new RegistrationFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -61,20 +56,9 @@ public class NoteListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        FragmentNoteListBinding noteListBinding = FragmentNoteListBinding.inflate(inflater, container, false);
-        View view = noteListBinding.getRoot();
-        noteListBinding.noteFab.setOnClickListener(this::createNewNote);
-
-        return view;
-    }
-
-    private void createNewNote(View view) {
-        NoteEntity newNote = new NoteEntity(NoteEntity.DEFAULT_NAME, NoteEntity.DEFAULT_CONTENT);
-        Bundle bundle = new Bundle();
-        bundle.putStringArray(NoteFragment.BUNDLE_KEY, new String[] {newNote.getName(), newNote.getContent()});
-        Navigation.findNavController(view).navigate(R.id.action_noteListFragment_to_noteFragment, bundle);
+        return inflater.inflate(R.layout.fragment_registration, container, false);
     }
 }

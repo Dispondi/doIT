@@ -17,6 +17,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.doit.databinding.ActivityMainBinding;
 import com.example.doit.databinding.FragmentNoteListBinding;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,5 +38,17 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // cause first fragment is logging
+        BottomNavigationView bottomNavigationView = mainBinding.bottomNavigation;
+        bottomNavigationView.setVisibility(View.GONE);
+
+//        NavController navController = Navigation.findNavController(view);
+//        navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
+//            if (navDestination.getId() == R.id.loginFragment || navDestination.getId() == R.id.registrationFragment) {
+//                bottomNavigationView.setVisibility(View.GONE);
+//            } else bottomNavigationView.setVisibility(View.VISIBLE);
+//        });
+
     }
 }

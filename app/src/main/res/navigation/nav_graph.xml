@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/noteListFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/noteListFragment"
@@ -23,4 +23,14 @@
             android:id="@+id/action_noteFragment_to_noteListFragment"
             app:destination="@id/noteListFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.doit.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" />
+    <fragment
+        android:id="@+id/registrationFragment"
+        android:name="com.example.doit.RegistrationFragment"
+        android:label="fragment_registration"
+        tools:layout="@layout/fragment_registration" />
 </navigation>
