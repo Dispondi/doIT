@@ -131,7 +131,7 @@ public class LoginFragment extends Fragment {
         // Create the bottom sheet configuration for the Credential Manager request
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(true)
-                .setServerClientId(requireContext().getString(R.string)) // here is error
+                .setServerClientId(requireContext().getString(R.string.default_web_client_id))
                 .build();
 
         // Create the Credential Manager request using the configuration created above
