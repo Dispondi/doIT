@@ -1,11 +1,15 @@
 package com.example.doit;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import androidx.credentials.CredentialManager;
 
 import static com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL;
 
 import androidx.credentials.exceptions.ClearCredentialException;
 import androidx.credentials.exceptions.GetCredentialException;
+
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,6 +20,8 @@ import androidx.credentials.GetCredentialResponse;
 import androidx.fragment.app.Fragment;
 
 import android.os.CancellationSignal;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,6 +33,7 @@ import com.example.doit.databinding.FragmentLoginBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -77,6 +84,13 @@ public class LoginFragment extends Fragment {
                 signIn(email, password);
             }
         });
+
+        binding.signInGoogleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showGoogleOptionDialog();
+            }
+        });
     }
 
     private void signIn(String email, String password) {
@@ -108,6 +122,7 @@ public class LoginFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
             reload();
@@ -130,13 +145,25 @@ public class LoginFragment extends Fragment {
     private void showBottomSheet() {
         // Create the bottom sheet configuration for the Credential Manager request
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(true)
+                .setFilterByAuthorizedAccounts(false)
                 .setServerClientId(requireContext().getString(R.string.default_web_client_id))
                 .build();
 
         // Create the Credential Manager request using the configuration created above
         GetCredentialRequest request = new GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
+                .build();
+
+        launchCredentialManager(request);
+    }
+
+    private void showGoogleOptionDialog() {
+        GetSignInWithGoogleOption signInWithGoogleOption = new GetSignInWithGoogleOption
+                .Builder(requireContext().getString(R.string.default_web_client_id))
+                .build();
+
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(signInWithGoogleOption)
                 .build();
 
         launchCredentialManager(request);
@@ -198,7 +225,9 @@ public class LoginFragment extends Fragment {
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            // change fragment
+            Toast.makeText(requireContext(), "Вход произведен", Toast.LENGTH_LONG).show();
+            final Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(VibrationEffect.createOneShot(125, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
             // invalid data
         }
