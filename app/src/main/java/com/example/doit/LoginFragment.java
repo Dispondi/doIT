@@ -42,11 +42,13 @@ import com.google.firebase.auth.FirebaseUser;
 
 import androidx.credentials.Credential;
 import androidx.credentials.CustomCredential;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.Objects;
 import java.util.concurrent.Executors;
 
 import java.util.concurrent.Executors;
@@ -59,6 +61,7 @@ public class LoginFragment extends Fragment {
     private FragmentLoginBinding binding;
     private FirebaseAuth mAuth;
     private CredentialManager credentialManager;
+    private NavController navController;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -77,6 +80,7 @@ public class LoginFragment extends Fragment {
 
         mAuth = FirebaseAuth.getInstance();
         credentialManager = CredentialManager.create(requireContext());
+        navController = Navigation.findNavController(binding.singInLayout);
 
         binding.signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,6 +95,13 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 showGoogleOptionDialog();
+            }
+        });
+
+        binding.signUpOfferButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                navController.navigate(R.id.action_loginFragment_to_registrationFragment);
             }
         });
     }
@@ -113,7 +124,7 @@ public class LoginFragment extends Fragment {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG_EMAIL_PASSWORD, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(getContext(), "Ошибка входа",
+                            Toast.makeText(getContext(), "Ошибка входа: " + Objects.requireNonNull(task.getException()).getMessage(),
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
@@ -185,7 +196,7 @@ public class LoginFragment extends Fragment {
                     }
 
                     @Override
-                    public void onError(GetCredentialException e) {
+                    public void onError(@NonNull GetCredentialException e) {
                         Log.e(TAG_GOOGLE, "Couldn't retrieve user's credentials: " + e.getLocalizedMessage());
                     }
                 }
@@ -219,7 +230,7 @@ public class LoginFragment extends Fragment {
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG_GOOGLE, "signInWithCredential:failure", task.getException());
-                        Snackbar.make(binding.singInLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Ошибка входа в FirebaseAuth", Toast.LENGTH_SHORT).show();
                         updateUI(null);
                     }
                 });
@@ -227,11 +238,11 @@ public class LoginFragment extends Fragment {
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            Toast.makeText(requireContext(), "Вход произведен", Toast.LENGTH_LONG).show();
-            final Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+            Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(VibrationEffect.createOneShot(125, VibrationEffect.DEFAULT_AMPLITUDE));
 
-            Navigation.findNavController(binding.singInLayout).navigate(R.id.action_loginFragment_to_noteListFragment);
+
+            navController.navigate(R.id.action_loginFragment_to_noteListFragment);
         } else {
             // invalid data
         }
@@ -264,9 +275,4 @@ public class LoginFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-
-    public void signUp() {
-
-    }
-
 }
