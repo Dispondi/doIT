@@ -42,6 +42,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 import androidx.credentials.Credential;
 import androidx.credentials.CustomCredential;
+import androidx.navigation.Navigation;
+
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 
@@ -217,7 +219,7 @@ public class LoginFragment extends Fragment {
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG_GOOGLE, "signInWithCredential:failure", task.getException());
-                        Snackbar.make(binding.mainLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(binding.singInLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
                         updateUI(null);
                     }
                 });
@@ -228,6 +230,8 @@ public class LoginFragment extends Fragment {
             Toast.makeText(requireContext(), "Вход произведен", Toast.LENGTH_LONG).show();
             final Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(VibrationEffect.createOneShot(125, VibrationEffect.DEFAULT_AMPLITUDE));
+
+            Navigation.findNavController(binding.singInLayout).navigate(R.id.action_loginFragment_to_noteListFragment);
         } else {
             // invalid data
         }
@@ -259,6 +263,10 @@ public class LoginFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    public void signUp() {
+
     }
 
 }
