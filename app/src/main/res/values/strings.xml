@@ -16,4 +16,7 @@
     <string name="sign_up_google">Регистрация с помощью Google</string>
     <string name="enter">Вход</string>
     <string name="create_note_description">Создать заметку</string>
+    <string name="are_u_sure">Вы уверены?</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
 </resources>

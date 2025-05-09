@@ -12,22 +12,44 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.doit.DeleteNoteDialog;
 import com.example.doit.R;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
+
+import org.w3c.dom.Document;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class NotesAdapter extends ListAdapter<DocumentSnapshot, NotesAdapter.ViewHolder> {
+
     private static final String TAG = "NotesAdapter";
 
+    public interface onDeleteClickListener {
+        void onDeleteClick(DocumentSnapshot note);
+    }
+
+    public interface onEditClickListener {
+        void onEditClick(DocumentSnapshot note);
+    }
+
     private ArrayList<DocumentSnapshot> notes;
+    private onDeleteClickListener onDeleteClickListener;
+    private onEditClickListener onEditClickListener;
 
     public NotesAdapter(ArrayList<DocumentSnapshot> notes) {
         super(diffCallback);
         this.notes = notes;
+    }
+
+    public void setOnDeleteClickListener(NotesAdapter.onDeleteClickListener onDeleteClickListener) {
+        this.onDeleteClickListener = onDeleteClickListener;
+    }
+
+    public void setOnEditClickListener(NotesAdapter.onEditClickListener onEditClickListener) {
+        this.onEditClickListener = onEditClickListener;
     }
 
     @NonNull
@@ -41,9 +63,17 @@ public class NotesAdapter extends ListAdapter<DocumentSnapshot, NotesAdapter.Vie
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        HashMap<String, Object> note = (HashMap<String, Object>) notes.get(position).getData();
+
+        DocumentSnapshot documentSnapshot = notes.get(position);
+        HashMap<String, Object> note = (HashMap<String, Object>) documentSnapshot.getData();
         Log.i(TAG, "Binding new note with title:" + note.get("title"));
         holder.bind(note);
+        if (onDeleteClickListener != null) {
+            holder.cardDelBtn.setOnClickListener(view -> onDeleteClickListener.onDeleteClick(documentSnapshot));
+        }
+        if (onEditClickListener != null) {
+            holder.cardEditBtn.setOnClickListener(view -> onEditClickListener.onEditClick(documentSnapshot));
+        }
     }
 
     @Override

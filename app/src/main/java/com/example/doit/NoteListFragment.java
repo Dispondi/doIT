@@ -17,6 +17,8 @@ import com.example.doit.databinding.FragmentNoteListBinding;
 import com.example.doit.entity.NoteEntity;
 import com.example.doit.entity.UserEntity;
 import com.example.doit.recyclerview.NotesAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -37,13 +39,6 @@ public class NoteListFragment extends Fragment {
 
     public NoteListFragment() {
         // Required empty public constructor
-    }
-
-    public static NoteListFragment newInstance(String param1, String param2) {
-        NoteListFragment fragment = new NoteListFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
@@ -69,8 +64,12 @@ public class NoteListFragment extends Fragment {
 
         ArrayList<DocumentSnapshot> notes = new ArrayList<>();
         NotesAdapter adapter = new NotesAdapter(notes);
+        adapter.setOnDeleteClickListener(note -> {
+                DeleteNoteDialog dialog = new DeleteNoteDialog(() -> deleteNote(note));
+                dialog.show(getParentFragmentManager(), "dialog");
+        });
 
-        // Receiving user's data and filling up notes ArrayList
+        // Receiving user's data and filling up ArrayList with notes
         DocumentReference docRef = db.document("users/" + userUID);
         docRef.get()
                 .continueWithTask(documentSnapshotTask -> getUserNotesDocuments(documentSnapshotTask, docRef))
@@ -102,6 +101,27 @@ public class NoteListFragment extends Fragment {
         else Log.d(TAG, "User's document already exists");
 
         return docRef.collection("notesMeta").get();
+    }
+
+    /* TODO:
+        - When document deleted its subcollections must be deleted too
+        - onSuccess adapter must be updated
+     */
+    private void deleteNote(DocumentSnapshot note) {
+        String path = "users/" + userUID + "/notesMeta/" + note.getId();
+        db.document(path).delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Log.d(TAG, "Note has been deleted successfully");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Failed to delete note", e);
+                    }
+                });
     }
 
     private void createNewNote(View view) {
