@@ -124,7 +124,7 @@ public class LoginFragment extends Fragment {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG_EMAIL_PASSWORD, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(getContext(), "Ошибка входа: " + Objects.requireNonNull(task.getException()).getMessage(),
+                            Toast.makeText(getContext(), "Ошибка входа: " + Objects.requireNonNull(task.getException()),
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
@@ -197,7 +197,7 @@ public class LoginFragment extends Fragment {
 
                     @Override
                     public void onError(@NonNull GetCredentialException e) {
-                        Log.e(TAG_GOOGLE, "Couldn't retrieve user's credentials: " + e.getLocalizedMessage());
+                        Log.e(TAG_GOOGLE, "Couldn't retrieve user's credentials", e);
                     }
                 }
         );

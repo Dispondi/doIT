@@ -11,12 +11,13 @@
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:maxHeight="64dp"
     android:orientation="vertical">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp">
 
         <!-- Title, secondary and supporting text -->
@@ -24,22 +25,40 @@
             android:id="@+id/noteCardName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="4dp"
             android:text=""
-            tools:text="Название"
             android:textAppearance="?attr/textAppearanceTitleMedium"
-            />
+            app:layout_constraintBottom_toTopOf="@+id/noteCardSnippet"
+            app:layout_constraintStart_toStartOf="@+id/noteCardSnippet"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Название" />
+
         <TextView
-            android:id="@+id/noteCardText"
+            android:id="@+id/noteCardSnippet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="2dp"
             android:text=""
-            tools:text="Текст внутри"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?android:attr/textColorSecondary"
-            />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/noteCardName"
+            tools:text="Сниппет" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/noteCardDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="01.01.1999"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/noteCardName"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
+            android:textColor="?android:attr/textColorTertiaryInverse"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Buttons -->
     <LinearLayout
@@ -67,7 +86,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity=""
-            android:contentDescription="TODO"
             android:text="@string/notecard_delete_button_label"
             android:textColor="@color/md_theme_error"
             style="?attr/borderlessButtonStyle"

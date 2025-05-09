@@ -91,7 +91,7 @@ public class RegistrationFragment extends Fragment {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG_EMAIL_PASSWORD, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(getContext(), "Ошибка регистрации: " + Objects.requireNonNull(task.getException()).getMessage(),
+                            Toast.makeText(getContext(), "Ошибка регистрации: " + Objects.requireNonNull(task.getException()),
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }

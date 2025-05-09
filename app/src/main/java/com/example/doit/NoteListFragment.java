@@ -3,50 +3,55 @@ package com.example.doit;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.doit.databinding.FragmentNoteListBinding;
 import com.example.doit.entity.NoteEntity;
+import com.example.doit.entity.UserEntity;
+import com.example.doit.recyclerview.NotesAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NoteListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 public class NoteListFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "NoteListFragment";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private FragmentNoteListBinding binding;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+    private String userUID;
 
     public NoteListFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NoteListFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static NoteListFragment newInstance(String param1, String param2) {
         NoteListFragment fragment = new NoteListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,21 +59,59 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        FragmentNoteListBinding noteListBinding = FragmentNoteListBinding.inflate(inflater, container, false);
-        View view = noteListBinding.getRoot();
-        noteListBinding.noteFab.setOnClickListener(this::createNewNote);
+        binding = FragmentNoteListBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
 
-        return view;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        userUID = auth.getCurrentUser().getUid();
+        createUserDocumentIfNotExist();
+
+        ArrayList<DocumentSnapshot> notes = new ArrayList<>();
+        NotesAdapter adapter = new NotesAdapter(notes);
+        fillNotesList(notes, adapter);
+
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recyclerView.setAdapter(adapter);
+        binding.noteFab.setOnClickListener(this::createNewNote);
+    }
+
+    private void fillNotesList(ArrayList<DocumentSnapshot> notes, NotesAdapter adapter) {
+        String collectionPath = "users/" + userUID + "/notesMeta";
+        db.collection(collectionPath).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Log.d(TAG, "User has no documents. Collection " + collectionPath + " is empty");
+                    } else {
+                        Log.d(TAG, "User have documents. Loading collection " + collectionPath);
+                        notes.addAll(queryDocumentSnapshots.getDocuments());
+                        adapter.notifyDataSetChanged();
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to load user's documents", e));
+    }
+
+    private void createUserDocumentIfNotExist() {
+        DocumentReference docRef = db.document("users/" + userUID);
+        docRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) { // if not exists
+                        Log.d(TAG, "User's document doesn't exists. Creating.");
+                        docRef.set(UserEntity.createDefaultUser()); // creates default user settings
+                    }
+                    else Log.d(TAG, "User's document already exists");
+                });
     }
 
     private void createNewNote(View view) {
