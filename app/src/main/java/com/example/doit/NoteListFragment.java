@@ -17,6 +17,7 @@ import com.example.doit.databinding.FragmentNoteListBinding;
 import com.example.doit.entity.NoteEntity;
 import com.example.doit.entity.UserEntity;
 import com.example.doit.recyclerview.NotesAdapter;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -76,42 +77,42 @@ public class NoteListFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
 
         userUID = auth.getCurrentUser().getUid();
-        createUserDocumentIfNotExist();
 
         ArrayList<DocumentSnapshot> notes = new ArrayList<>();
         NotesAdapter adapter = new NotesAdapter(notes);
-        fillNotesList(notes, adapter);
+
+        // Receiving user's data and filling up recyclerView
+        DocumentReference docRef = db.document("users/" + userUID);
+        docRef.get()
+                .continueWithTask(documentSnapshotTask -> getUserDocument(documentSnapshotTask, docRef))
+                .addOnSuccessListener(queryDocumentSnapshots -> fillNotesWithUserData(queryDocumentSnapshots, notes, adapter))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to load user's documents", e));
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerView.setAdapter(adapter);
         binding.noteFab.setOnClickListener(this::createNewNote);
     }
 
-    private void fillNotesList(ArrayList<DocumentSnapshot> notes, NotesAdapter adapter) {
-        String collectionPath = "users/" + userUID + "/notesMeta";
-        db.collection(collectionPath).get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        Log.d(TAG, "User has no documents. Collection " + collectionPath + " is empty");
-                    } else {
-                        Log.d(TAG, "User have documents. Loading collection " + collectionPath);
-                        notes.addAll(queryDocumentSnapshots.getDocuments());
-                        adapter.notifyDataSetChanged();
-                    }
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to load user's documents", e));
+    private void fillNotesWithUserData(QuerySnapshot queryDocumentSnapshots, ArrayList<DocumentSnapshot> notes, NotesAdapter adapter) {
+        String path = "users/" + userUID + "/notesMeta";
+        if (queryDocumentSnapshots.isEmpty()) {
+            Log.d(TAG, "User has no documents. Collection " + path + " is empty");
+        } else {
+            Log.d(TAG, "User have documents. Loading collection " + path);
+            notes.addAll(queryDocumentSnapshots.getDocuments());
+            adapter.notifyDataSetChanged();
+        }
     }
 
-    private void createUserDocumentIfNotExist() {
-        DocumentReference docRef = db.document("users/" + userUID);
-        docRef.get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (!documentSnapshot.exists()) { // if not exists
-                        Log.d(TAG, "User's document doesn't exists. Creating.");
-                        docRef.set(UserEntity.createDefaultUser()); // creates default user settings
-                    }
-                    else Log.d(TAG, "User's document already exists");
-                });
+    @NonNull
+    private Task<QuerySnapshot> getUserDocument(Task<DocumentSnapshot> task, DocumentReference docRef) {
+        if (!task.getResult().exists()) { // if user's data document not exists
+            Log.d(TAG, "User's document doesn't exists. Creating.");
+            docRef.set(UserEntity.createDefaultUser()); // creates default user data
+        }
+        else Log.d(TAG, "User's document already exists");
+
+        return docRef.collection("notesMeta").get();
     }
 
     private void createNewNote(View view) {
