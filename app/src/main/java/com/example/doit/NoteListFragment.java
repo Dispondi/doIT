@@ -17,25 +17,14 @@ import com.example.doit.databinding.FragmentNoteListBinding;
 import com.example.doit.entity.NoteEntity;
 import com.example.doit.entity.UserEntity;
 import com.example.doit.recyclerview.NotesAdapter;
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class NoteListFragment extends Fragment {
 
@@ -81,10 +70,10 @@ public class NoteListFragment extends Fragment {
         ArrayList<DocumentSnapshot> notes = new ArrayList<>();
         NotesAdapter adapter = new NotesAdapter(notes);
 
-        // Receiving user's data and filling up recyclerView
+        // Receiving user's data and filling up notes ArrayList
         DocumentReference docRef = db.document("users/" + userUID);
         docRef.get()
-                .continueWithTask(documentSnapshotTask -> getUserDocument(documentSnapshotTask, docRef))
+                .continueWithTask(documentSnapshotTask -> getUserNotesDocuments(documentSnapshotTask, docRef))
                 .addOnSuccessListener(queryDocumentSnapshots -> fillNotesWithUserData(queryDocumentSnapshots, notes, adapter))
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to load user's documents", e));
 
@@ -100,12 +89,12 @@ public class NoteListFragment extends Fragment {
         } else {
             Log.d(TAG, "User have documents. Loading collection " + path);
             notes.addAll(queryDocumentSnapshots.getDocuments());
-            adapter.notifyDataSetChanged();
+            adapter.submitList(notes); // updating recyclerview's adapter
         }
     }
 
     @NonNull
-    private Task<QuerySnapshot> getUserDocument(Task<DocumentSnapshot> task, DocumentReference docRef) {
+    private Task<QuerySnapshot> getUserNotesDocuments(Task<DocumentSnapshot> task, DocumentReference docRef) {
         if (!task.getResult().exists()) { // if user's data document not exists
             Log.d(TAG, "User's document doesn't exists. Creating.");
             docRef.set(UserEntity.createDefaultUser()); // creates default user data
