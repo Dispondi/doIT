@@ -1,10 +1,12 @@
 package com.example.doit;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -14,12 +16,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.doit.databinding.FragmentNoteListBinding;
+import com.example.doit.entity.ContentEntity;
 import com.example.doit.entity.NoteEntity;
 import com.example.doit.entity.UserEntity;
 import com.example.doit.recyclerview.NotesAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -31,11 +35,14 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 
 public class NoteListFragment extends Fragment {
 
     private static final String TAG = "NoteListFragment";
+    private final String CONTENT_MAIN_REFERENCE = "/content/main";
 
+    private NavController navController;
     private FragmentNoteListBinding binding;
 
     private FirebaseAuth auth;
@@ -67,6 +74,8 @@ public class NoteListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        navController = Navigation.findNavController(view);
+
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
@@ -74,11 +83,7 @@ public class NoteListFragment extends Fragment {
         USER_REFERENCE = "users/" + userUID;
         META_REFERENCE = "users/" + userUID + "/notesMeta";
 
-        NotesAdapter adapter = new NotesAdapter();
-        adapter.setOnDeleteClickListener(note -> { // creating offering dialog to delete a note
-                DeleteNoteDialog dialog = new DeleteNoteDialog(() -> deleteNote(note));
-                dialog.show(getParentFragmentManager(), "dialog");
-        });
+        NotesAdapter adapter = getNotesAdapter(); // just extracted long function
 
         // Receiving user's data
         DocumentReference docRef = db.document(USER_REFERENCE);
@@ -93,17 +98,47 @@ public class NoteListFragment extends Fragment {
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerView.setAdapter(adapter);
-        binding.noteFab.setOnClickListener(this::createNewNote);
+        binding.noteFab.setOnClickListener(view1 -> createNewNote());
     }
 
-    @Nullable
+    /* TODO:
+        -Content is stored in NotesEntity, but it also stored in ContentEntity. It looks pretty puzzled.
+        -When createNewNote is placed outside of addOnSuccessListener it loads empty content
+        -It would make more sense if the content loading logic was placed in a NoteFragment
+     */
+
+
+    @NonNull
+    private NotesAdapter getNotesAdapter() {
+        NotesAdapter adapter = new NotesAdapter();
+        adapter.setOnDeleteClickListener(note -> { // creating offering dialog to delete a note
+                DeleteNoteDialog dialog = new DeleteNoteDialog(() -> deleteNote(note));
+                dialog.show(getParentFragmentManager(), "dialog");
+        });
+        adapter.setOnEditClickListener(note -> {
+            ContentEntity content = new ContentEntity();
+
+            String contentPath = note.getReference().getPath() + CONTENT_MAIN_REFERENCE;
+            DocumentReference contentRef = db.document(contentPath);
+            contentRef.get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        Log.d(TAG, "Content loaded successfully");
+                        content.setContent(documentSnapshot);
+                        NoteEntity noteEntity = new NoteEntity(note, content);
+                        createNewNote(noteEntity);
+                    })
+                    .addOnFailureListener(e -> Log.w(TAG, "Can't load content", e));
+        });
+        return adapter;
+    }
+
     private Task<Void> createUserDocumentIfNotExists(@NonNull Task<DocumentSnapshot> task, DocumentReference docRef) {
         if (!task.getResult().exists()) {
             Log.d(TAG, "User's document doesn't exists. Creating.");
             return docRef.set(UserEntity.createDefaultUser());
         } else {
             Log.d(TAG, "User have documents.");
-            return null;
+            return Tasks.forResult(null);
         }
     }
 
@@ -141,10 +176,16 @@ public class NoteListFragment extends Fragment {
                 });
     }
 
-    private void createNewNote(View view) {
-        NoteEntity newNote = new NoteEntity(NoteEntity.DEFAULT_NAME, NoteEntity.DEFAULT_CONTENT);
+    private void createNewNote() { // creates default note
+        NoteEntity newNote = new NoteEntity();
         Bundle bundle = new Bundle();
         bundle.putStringArray(NoteFragment.BUNDLE_KEY, new String[] {newNote.getName(), newNote.getContent()});
-        Navigation.findNavController(view).navigate(R.id.action_noteListFragment_to_noteFragment, bundle);
+        navController.navigate(R.id.action_noteListFragment_to_noteFragment, bundle);
+    }
+
+    private void createNewNote(NoteEntity newNote) {
+        Bundle bundle = new Bundle();
+        bundle.putStringArray(NoteFragment.BUNDLE_KEY, new String[] {newNote.getName(), newNote.getContent()});
+        navController.navigate(R.id.action_noteListFragment_to_noteFragment, bundle);
     }
 }

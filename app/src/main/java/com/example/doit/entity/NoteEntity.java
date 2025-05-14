@@ -1,5 +1,7 @@
 package com.example.doit.entity;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+
 public class NoteEntity {
     public static final String DEFAULT_NAME = "Без названия";
     public static final String DEFAULT_CONTENT = "Текст";
@@ -7,24 +9,20 @@ public class NoteEntity {
     private String name;
     private String content;
 
-    public NoteEntity(String name, String content) {
-        this.name = name;
-        this.content = content;
-    }
+    public NoteEntity() {}
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
+    public NoteEntity(DocumentSnapshot note, ContentEntity content) {
+        this.name = note.getString("title");
+        this.content = content.getContent();
     }
 
     public String getName() {
-        return name;
+        if (name == null) return DEFAULT_NAME;
+        else return name;
     }
 
     public String getContent() {
-        return content;
+        if (content == null) return DEFAULT_CONTENT;
+        else return content;
     }
 }
