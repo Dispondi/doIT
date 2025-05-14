@@ -6,7 +6,6 @@ import androidx.credentials.CredentialManager;
 
 import static com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL;
 
-import androidx.credentials.exceptions.ClearCredentialException;
 import androidx.credentials.exceptions.GetCredentialException;
 
 import android.content.Context;
@@ -49,8 +48,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.Objects;
-import java.util.concurrent.Executors;
-
 import java.util.concurrent.Executors;
 
 public class LoginFragment extends Fragment {

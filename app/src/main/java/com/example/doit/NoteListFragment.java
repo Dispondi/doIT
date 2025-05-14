@@ -21,9 +21,13 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -33,9 +37,15 @@ public class NoteListFragment extends Fragment {
     private static final String TAG = "NoteListFragment";
 
     private FragmentNoteListBinding binding;
+
     private FirebaseAuth auth;
     private FirebaseFirestore db;
+
+    private ListenerRegistration notesListener;
+
     private String userUID;
+    private String USER_REFERENCE;
+    private String META_REFERENCE;
 
     public NoteListFragment() {
         // Required empty public constructor
@@ -61,51 +71,58 @@ public class NoteListFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
 
         userUID = auth.getCurrentUser().getUid();
+        USER_REFERENCE = "users/" + userUID;
+        META_REFERENCE = "users/" + userUID + "/notesMeta";
 
-        ArrayList<DocumentSnapshot> notes = new ArrayList<>();
-        NotesAdapter adapter = new NotesAdapter(notes);
-        adapter.setOnDeleteClickListener(note -> {
+        NotesAdapter adapter = new NotesAdapter();
+        adapter.setOnDeleteClickListener(note -> { // creating offering dialog to delete a note
                 DeleteNoteDialog dialog = new DeleteNoteDialog(() -> deleteNote(note));
                 dialog.show(getParentFragmentManager(), "dialog");
         });
 
-        // Receiving user's data and filling up ArrayList with notes
-        DocumentReference docRef = db.document("users/" + userUID);
-        docRef.get()
-                .continueWithTask(documentSnapshotTask -> getUserNotesDocuments(documentSnapshotTask, docRef))
-                .addOnSuccessListener(queryDocumentSnapshots -> fillNotesWithUserData(queryDocumentSnapshots, notes, adapter))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to load user's documents", e));
+        // Receiving user's data
+        DocumentReference docRef = db.document(USER_REFERENCE);
+        docRef.get() // gets user reference
+                .continueWithTask(task -> createUserDocumentIfNotExists(task, docRef)) // creates user document if not exists
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to get user's documents", e));
+
+        // Listen changes in users/userUID/notesMeta and updating adapter
+        CollectionReference notesRef = db.collection(META_REFERENCE);
+        notesListener = notesRef.orderBy("lastUpdate", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, e) -> fillAdapter(snapshots, e, adapter));
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerView.setAdapter(adapter);
         binding.noteFab.setOnClickListener(this::createNewNote);
     }
 
-    private void fillNotesWithUserData(QuerySnapshot queryDocumentSnapshots, ArrayList<DocumentSnapshot> notes, NotesAdapter adapter) {
-        String path = "users/" + userUID + "/notesMeta";
-        if (queryDocumentSnapshots.isEmpty()) {
-            Log.d(TAG, "User has no documents. Collection " + path + " is empty");
+    @Nullable
+    private Task<Void> createUserDocumentIfNotExists(@NonNull Task<DocumentSnapshot> task, DocumentReference docRef) {
+        if (!task.getResult().exists()) {
+            Log.d(TAG, "User's document doesn't exists. Creating.");
+            return docRef.set(UserEntity.createDefaultUser());
         } else {
-            Log.d(TAG, "User have documents. Loading collection " + path);
-            notes.addAll(queryDocumentSnapshots.getDocuments());
-            adapter.submitList(notes); // updating recyclerview's adapter
+            Log.d(TAG, "User have documents.");
+            return null;
         }
     }
 
-    @NonNull
-    private Task<QuerySnapshot> getUserNotesDocuments(Task<DocumentSnapshot> task, DocumentReference docRef) {
-        if (!task.getResult().exists()) { // if user's data document not exists
-            Log.d(TAG, "User's document doesn't exists. Creating.");
-            docRef.set(UserEntity.createDefaultUser()); // creates default user data
+    private void fillAdapter(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException e, NotesAdapter adapter) {
+        if (e != null) {
+            Log.w(TAG, "Listen failed.", e);
+            return;
         }
-        else Log.d(TAG, "User's document already exists");
 
-        return docRef.collection("notesMeta").get();
+        if (snapshots != null) {
+            Log.d(TAG, "notesListener is filling adapter");
+            adapter.submitList(snapshots.getDocuments());
+        } else {
+            adapter.submitList(new ArrayList<>());
+        }
     }
 
     /* TODO:
         - When document deleted its subcollections must be deleted too
-        - onSuccess adapter must be updated
      */
     private void deleteNote(DocumentSnapshot note) {
         String path = "users/" + userUID + "/notesMeta/" + note.getId();

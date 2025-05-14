@@ -15,7 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.doit.DeleteNoteDialog;
 import com.example.doit.R;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import org.w3c.dom.Document;
 
@@ -27,6 +30,7 @@ public class NotesAdapter extends ListAdapter<DocumentSnapshot, NotesAdapter.Vie
 
     private static final String TAG = "NotesAdapter";
 
+    // For buttons on ViewHolder
     public interface onDeleteClickListener {
         void onDeleteClick(DocumentSnapshot note);
     }
@@ -35,13 +39,11 @@ public class NotesAdapter extends ListAdapter<DocumentSnapshot, NotesAdapter.Vie
         void onEditClick(DocumentSnapshot note);
     }
 
-    private ArrayList<DocumentSnapshot> notes;
     private onDeleteClickListener onDeleteClickListener;
     private onEditClickListener onEditClickListener;
 
-    public NotesAdapter(ArrayList<DocumentSnapshot> notes) {
+    public NotesAdapter() {
         super(diffCallback);
-        this.notes = notes;
     }
 
     public void setOnDeleteClickListener(NotesAdapter.onDeleteClickListener onDeleteClickListener) {
@@ -64,21 +66,17 @@ public class NotesAdapter extends ListAdapter<DocumentSnapshot, NotesAdapter.Vie
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        DocumentSnapshot documentSnapshot = notes.get(position);
+        DocumentSnapshot documentSnapshot = getItem(position);
         HashMap<String, Object> note = (HashMap<String, Object>) documentSnapshot.getData();
-        Log.i(TAG, "Binding new note with title:" + note.get("title"));
-        holder.bind(note);
+        Log.i(TAG, "Binding new note with title: " + note.get("title"));
+        holder.bind(note); // binding
+
         if (onDeleteClickListener != null) {
             holder.cardDelBtn.setOnClickListener(view -> onDeleteClickListener.onDeleteClick(documentSnapshot));
         }
         if (onEditClickListener != null) {
             holder.cardEditBtn.setOnClickListener(view -> onEditClickListener.onEditClick(documentSnapshot));
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return notes.size();
     }
 
     public static final DiffUtil.ItemCallback<DocumentSnapshot> diffCallback =
