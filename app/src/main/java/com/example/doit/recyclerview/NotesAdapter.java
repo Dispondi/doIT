@@ -36,7 +36,7 @@ public class NotesAdapter extends ListAdapter<DocumentSnapshot, NotesAdapter.Vie
     }
 
     public interface onEditClickListener {
-        void onEditClick(DocumentSnapshot note);
+        void onEditClick(DocumentSnapshot noteSnapshot);
     }
 
     private onDeleteClickListener onDeleteClickListener;

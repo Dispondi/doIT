@@ -3,6 +3,9 @@ package com.example.doit.entity;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 public class ContentEntity {
+
+    public static final String DEFAULT_CONTENT = "Здесь пока ничего нет";
+
     private String content;
 
     public ContentEntity(String content) {
@@ -16,15 +19,10 @@ public class ContentEntity {
     public ContentEntity() {}
 
     public String getContent() {
-        if (content == null) return "";
-        else return content;
+        return content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setContent(DocumentSnapshot content) {
-        this.content = content.getString("content");
+    public static ContentEntity createDefaultContent() {
+        return new ContentEntity(DEFAULT_CONTENT);
     }
 }
