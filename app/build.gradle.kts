@@ -47,6 +47,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.preference)
 
     // firebase
     implementation(platform(libs.firebase.bom))

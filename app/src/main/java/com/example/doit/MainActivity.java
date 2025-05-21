@@ -1,6 +1,8 @@
 package com.example.doit;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -15,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -22,6 +25,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.doit.databinding.ActivityMainBinding;
 import com.example.doit.databinding.FragmentNoteListBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // cause first fragment is logging
         BottomNavigationView bottomNavigationView = mainBinding.bottomNavigation;
         // bottomNavigationView.setVisibility(View.GONE);
 
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = navHostFragment.getNavController();
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
+        // bottom navigation visibility logic
         navController.addOnDestinationChangedListener(
                 new NavController.OnDestinationChangedListener() {
                     @Override
@@ -68,6 +72,26 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+
+        // changing fragment via bottom navigation logic
+        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                NavOptions options = new NavOptions.Builder()
+                        .setLaunchSingleTop(true)
+                        .build();
+
+                int currentDestinationId = navController.getCurrentDestination().getId();
+                if (item.getItemId() == R.id.notes_bottom_navigation_bar && currentDestinationId != R.id.noteListFragment) {
+                    navController.navigate(R.id.action_settingsFragment_to_noteListFragment, null, options);
+                    return true;
+                } else if (item.getItemId() == R.id.setting_bottom_navigation_bar && currentDestinationId != R.id.settingsFragment) {
+                    navController.navigate(R.id.action_noteListFragment_to_settingsFragment, null, options);
+                    return true;
+                }
+                return false;
+            }
+        });
 
     }
 }

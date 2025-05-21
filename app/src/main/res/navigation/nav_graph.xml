@@ -16,6 +16,9 @@
         <argument
             android:name="ShowAppBar"
             android:defaultValue="true" />
+        <action
+            android:id="@+id/action_noteListFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/note_linear_layout"
@@ -33,7 +36,9 @@
         tools:layout="@layout/fragment_login" >
         <action
             android:id="@+id/action_loginFragment_to_noteListFragment"
-            app:destination="@id/noteListFragment" />
+            app:destination="@id/noteListFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_loginFragment_to_registrationFragment"
             app:destination="@id/registrationFragment" />
@@ -48,6 +53,24 @@
             app:destination="@id/loginFragment" />
         <action
             android:id="@+id/action_registrationFragment_to_noteListFragment"
+            app:destination="@id/noteListFragment"
+            app:popUpTo="@id/registrationFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.doit.SettingsFragment"
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_noteListFragment"
             app:destination="@id/noteListFragment" />
+        <argument
+            android:name="ShowAppBar"
+            android:defaultValue="true" />
+        <action
+            android:id="@+id/action_settingsFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>
