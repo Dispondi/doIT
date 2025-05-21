@@ -69,12 +69,5 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-//        NavController navController = Navigation.findNavController(view);
-//        navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
-//            if (navDestination.getId() == R.id.loginFragment || navDestination.getId() == R.id.registrationFragment) {
-//                bottomNavigationView.setVisibility(View.GONE);
-//            } else bottomNavigationView.setVisibility(View.VISIBLE);
-//        });
-
     }
 }

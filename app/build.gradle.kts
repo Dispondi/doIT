@@ -37,6 +37,7 @@ android {
 
 dependencies {
 
+    // android
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -47,11 +48,22 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 
+    // firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
-
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    // markwon
+    implementation(libs.markwon.core)
+    implementation(libs.editor)
+    implementation(libs.ext.strikethrough)
+    implementation(libs.ext.tables)
+    implementation(libs.ext.tasklist)
+    implementation(libs.linkify)
+    implementation(libs.recycler)
+    implementation(libs.html)
+
 }

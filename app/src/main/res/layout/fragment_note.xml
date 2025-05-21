@@ -1,70 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_note_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/noteFragment">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:id="@+id/noteName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAppearance="?attr/textAppearanceTitleLarge"
-            android:fontFamily="@font/inter_bold"
-            android:layout_margin="16dp"
-            tools:text="Название" />
+        <LinearLayout
+            android:id="@+id/note_linear_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <!-- Spacer View to push the next button to the right -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/note_name_constraint_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/noteBackButton"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/arrow_back_icon"
-            app:iconSize="30dp"
-            android:layout_gravity="center_vertical"/>
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/note_name_layout"
+                    style="?attr/textInputOutlinedDenseStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="4dp"
+                    android:paddingBottom="5dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/note_back_button"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:text="Название">
 
-        <Button
-            android:id="@+id/noteDeleteButton"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/trashcan_icon"
-            app:iconSize="30dp"
-            android:layout_gravity="center_vertical"
-            android:iconTint="@color/md_theme_error" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/note_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter_bold"
+                        android:textAppearance="?attr/textAppearanceTitleLarge"
+                        tools:text="Название" />
 
-    </LinearLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:dividerInsetStart="16dp"
-        app:dividerInsetEnd="16dp"/>
+                <Button
+                    android:id="@+id/note_back_button"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="16dp"
+                    app:icon="@drawable/arrow_back_icon"
+                    app:iconSize="30dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/note_name_layout" />
 
-    <TextView
-        android:id="@+id/noteText"
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_input_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxStrokeWidth="0dp"
+                android:enabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/note_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
+
+                    android:focusable="false"
+
+                    android:fontFamily="@font/inter"
+                    android:inputType="text"
+                    android:nestedScrollingEnabled="true"
+                    android:paddingStart="3dp"
+                    android:paddingEnd="3dp"
+                    android:paddingBottom="10dp"
+                    android:scrollbars="vertical"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    tools:text="@tools:sample/lorem/random" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+    <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
+        android:id="@+id/floating_toolbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        android:fontFamily="@font/inter"
-        android:scrollbars="vertical"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        tools:text="@tools:sample/lorem/random" />
+        app:layout_anchor="@id/scroll_container"
+        app:layout_anchorGravity="bottom|center"
+        android:layout_margin="16dp"
+        android:visibility="gone">
 
-</LinearLayout>
+        <!-- floating toolbar sample content -->
+        <com.google.android.material.overflow.OverflowLinearLayout
+            android:id="@+id/floating_toolbar_child"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/floating_toolbar_button_bold"
+                style="?attr/materialIconButtonFilledTonalStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/bold_icon" />
+
+            <Button
+                android:id="@+id/floating_toolbar_button_italic"
+                style="?attr/materialIconButtonFilledTonalStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/italic_icon" />
+
+            <Button
+                android:id="@+id/floating_toolbar_button_underlined"
+                style="?attr/materialIconButtonFilledTonalStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/underlined_icon" />
+
+            <Button
+                android:id="@+id/floating_toolbar_button_done"
+                style="?attr/materialIconButtonFilledTonalStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/done_icon" />
+        </com.google.android.material.overflow.OverflowLinearLayout>
+
+    </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/edit_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_anchor="@id/scroll_container"
+        app:layout_anchorGravity="bottom|end"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:srcCompat="@drawable/edit_note_icon"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

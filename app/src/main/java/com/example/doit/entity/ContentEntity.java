@@ -12,10 +12,6 @@ public class ContentEntity {
         this.content = content;
     }
 
-    public ContentEntity(DocumentSnapshot content) {
-        this.content = content.getString("content");
-    }
-
     public ContentEntity() {}
 
     public String getContent() {
