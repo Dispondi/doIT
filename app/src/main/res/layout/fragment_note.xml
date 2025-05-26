@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator_note_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".NoteFragment">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_container"
@@ -63,7 +64,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:dividerInsetEnd="16dp"
                 app:dividerInsetStart="16dp" />
@@ -71,13 +72,13 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/text_input_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 app:boxStrokeWidth="0dp"
                 android:enabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/note_text"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="16dp"
@@ -86,7 +87,8 @@
                     android:focusable="false"
 
                     android:fontFamily="@font/inter"
-                    android:inputType="text"
+                    android:inputType="textMultiLine"
+                    android:scrollHorizontally="false"
                     android:nestedScrollingEnabled="true"
                     android:paddingStart="3dp"
                     android:paddingEnd="3dp"
@@ -150,6 +152,7 @@
 
     </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
 
+    <!--
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/edit_fab"
         android:layout_width="wrap_content"
@@ -161,5 +164,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         app:srcCompat="@drawable/edit_note_icon"/>
+    -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

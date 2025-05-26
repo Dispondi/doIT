@@ -23,6 +23,7 @@ import com.example.doit.recyclerview.NotesAdapter;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -32,6 +33,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.sql.Time;
 
 public class NoteListFragment extends Fragment {
 
@@ -164,7 +167,7 @@ public class NoteListFragment extends Fragment {
         noteDocRef.set(defaultNote)
                 .addOnSuccessListener(unused -> {
                     Log.d(TAG, "Created note in db successfully");
-                    openNote(defaultNote.getTitle(), noteDocRef.getPath());
+                    openNote(defaultNote.getTitle(), noteDocRef.getPath()); // opens it
                 })
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Creating note in db is failed: ", e);

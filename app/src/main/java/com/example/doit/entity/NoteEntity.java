@@ -6,6 +6,13 @@ public class NoteEntity {
     public static final String DEFAULT_NAME = "Без названия";
     public static final String DEFAULT_SNIPPET = "";
 
+    public static final String CREATED_AT_FIELD = "createdAt";
+    public static final String LAST_UPDATE_FIELD = "last_update";
+    public static final String SNIPPET_FIELD = "snippet";
+    public static final String TITLE_FIELD = "title";
+
+    public static final int SNIPPET_LENGHT = 20;
+
     private String title;
     private String snippet;
     private Timestamp createdAt;

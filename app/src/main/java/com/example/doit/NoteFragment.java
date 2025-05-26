@@ -1,18 +1,16 @@
 package com.example.doit;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import android.text.Editable;
-import android.text.Spanned;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,21 +19,23 @@ import android.widget.Toast;
 
 import com.example.doit.databinding.FragmentNoteBinding;
 import com.example.doit.entity.ContentEntity;
+import com.example.doit.entity.NoteEntity;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+
 import io.noties.markwon.Markwon;
-import io.noties.markwon.core.spans.StrongEmphasisSpan;
-import io.noties.markwon.editor.AbstractEditHandler;
 import io.noties.markwon.editor.MarkwonEditorTextWatcher;
-import io.noties.markwon.editor.MarkwonEditorUtils;
-import io.noties.markwon.editor.PersistedSpans;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.ext.tables.TablePlugin;
 import io.noties.markwon.ext.tasklist.TaskListPlugin;
@@ -46,6 +46,9 @@ import io.noties.markwon.editor.MarkwonEditor;
 
 public class NoteFragment extends Fragment {
     private static final String TAG = "NoteFragment";
+    public static final String BUNDLE_KEY = "note_bundle_key";
+
+    private static final int MARGIN = 16;
 
     private NavController navController;
     private FragmentNoteBinding noteBinding;
@@ -58,10 +61,11 @@ public class NoteFragment extends Fragment {
 
     private String NOTE_REFERENCE_PATH;
     private String CONTENT_REFERENCE_PATH;
+    private String NOTE_NAME;
 
     private String content;
-
-    public static final String BUNDLE_KEY = "note_bundle_key";
+    private String contentTextWithTags;
+    private boolean editing = false;
 
     private String[] noteNameAndPath;
 
@@ -76,6 +80,7 @@ public class NoteFragment extends Fragment {
             db = FirebaseFirestore.getInstance();
             auth = FirebaseAuth.getInstance();
 
+            NOTE_NAME = noteNameAndPath[0];
             NOTE_REFERENCE_PATH = noteNameAndPath[1];
             CONTENT_REFERENCE_PATH = NOTE_REFERENCE_PATH + "/content/main";
         }
@@ -105,110 +110,93 @@ public class NoteFragment extends Fragment {
 
         navController = Navigation.findNavController(view);
 
-        // loading content
+        var floatingToolbar = noteBinding.floatingToolbar;
+        float toolbarOffset = floatingToolbar.getHeight() + dpToPx(MARGIN, requireActivity());
+
+        // content loading from db logic
         DocumentReference docRef = db.document(CONTENT_REFERENCE_PATH);
         docRef.get()
                 .continueWithTask(task -> createContentDocumentIfNotExists(task, docRef)) // if content document doesn't exists creates and returns it
                                                                                 // if exists returns it
                 .addOnSuccessListener(result -> {
                     Log.d(TAG, "Content loaded successfully");
-                    content = result.getString("content");
-                    markwon.setMarkdown(noteBinding.noteText, // sets up content text
-                            content != null ? content : "");
-                    noteBinding.noteName.setText(noteNameAndPath[0]);
+                    contentTextWithTags = result.getString("content");
+                    fillNoteFromSnapshot(result);
                 })
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Content loading failed: ", e);
                     Toast.makeText(requireContext(), "Ошибка при загрузке: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
 
-        // fab logic
+        // translating toolbar
         view.post(() -> {
-            float toolbarOffset = noteBinding.floatingToolbar.getHeight() + dpToPx(16);
-            noteBinding.floatingToolbar.setTranslationY(toolbarOffset);
+            float offset = floatingToolbar.getHeight() + dpToPx(MARGIN, requireActivity());
+            floatingToolbar.setTranslationY(offset);
         });
 
-        noteBinding.editFab.setOnClickListener(view1 -> {
-            float fabOffset = view1.getHeight() + dpToPx(16); // 16 - margin
-            view1.animate()
-                    .translationY(fabOffset)
-                    .setDuration(250)
-                    .withEndAction(() -> view1.setVisibility(View.GONE))
-                    .start();
-
-            noteBinding.floatingToolbar.setVisibility(View.VISIBLE);
-            noteBinding.floatingToolbar.animate()
-                    .translationY(0)
-                    .setDuration(250)
-                    .start();
-
-            noteBinding.noteText.setFocusable(true);
-            noteBinding.noteText.setFocusableInTouchMode(true);
-            noteBinding.noteText.setScreenReaderFocusable(true);
-            noteBinding.noteText.requestFocus();
+        // click on content text
+        noteBinding.noteText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!editing) {
+                    makeVisible(floatingToolbar);
+                    makeFocusable(noteBinding.noteText, true);
+                    noteBinding.noteText.setText(contentTextWithTags);
+                    noteBinding.noteText.requestFocus();
+                    editing = true;
+                }
+            }
         });
 
         // toolbar logic
         noteBinding.floatingToolbarButtonDone.setOnClickListener(view2 -> {
-            float toolbarOffset = noteBinding.floatingToolbar.getHeight() + dpToPx(16);
-            noteBinding.floatingToolbar.animate()
-                    .translationY(toolbarOffset)
-                    .setDuration(250)
-                    .withEndAction(() -> noteBinding.floatingToolbar.setVisibility(View.GONE))
-                    .start();
+            editing = false;
 
-            noteBinding.editFab.setVisibility(View.VISIBLE);
-            noteBinding.editFab.animate()
-                    .translationY(0)
-                    .setDuration(250)
-                    .start();
+            // DONE BUTTON
+            contentTextWithTags = noteBinding.noteText.getText().toString();
+            markwon.setMarkdown(noteBinding.noteText, contentTextWithTags);
+//            db.document(CONTENT_REFERENCE_PATH).set(new ContentEntity(contentTextWithTags))
+//                    .continueWithTask((Continuation<Void, Task<Void>>) task -> {
+//                        if (!task.isSuccessful()) throw task.getException();
+//
+//                        markwon.setMarkdown(noteBinding.noteText, contentTextWithTags);
+//                        return Tasks.forResult(null);
+//                    })
+//                    .addOnSuccessListener(unused -> Log.d(TAG, "Saved content successfully"))
+//                    .addOnFailureListener(e -> {
+//                        Log.w(TAG, "Saving content failed: ", e);
+//                        Toast.makeText(requireContext(), "Ошибка при сохранении: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                    });
 
-            noteBinding.noteText.setFocusable(false);
-            noteBinding.noteText.setFocusableInTouchMode(false);
-            noteBinding.noteText.setScreenReaderFocusable(false);
-
-            String text = noteBinding.noteText.getText().toString();
-            // saving in Firebase
-            db.document(CONTENT_REFERENCE_PATH).set(new ContentEntity(text))
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Log.d(TAG, "Saved content successfully");
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.w(TAG, "Saving content failed: ", e);
-                                Toast.makeText(requireContext(), "Ошибка при сохранении: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-            markwon.setMarkdown(noteBinding.noteText, text);
+            makeInvisible(floatingToolbar, toolbarOffset);
+            makeFocusable(noteBinding.noteText, false);
         });
 
+        // BOLD BUTTON
         noteBinding.floatingToolbarButtonBold.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                appendEditTextWith("**");
+                appendEditTextWith("<b>");
             }
         });
 
+        // ITALIC BUTTON
         noteBinding.floatingToolbarButtonItalic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                appendEditTextWith("*");
+                appendEditTextWith("<i>");
             }
         });
 
+        // UNDERLINED BUTTON
         noteBinding.floatingToolbarButtonUnderlined.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                appendEditTextWith("++");
+                appendEditTextWith("<u>");
             }
         });
 
-        // markwon
+        // markwon editor
         noteBinding.noteText.addTextChangedListener(MarkwonEditorTextWatcher.withProcess(markwonEditor));
 
         // back button
@@ -216,14 +204,68 @@ public class NoteFragment extends Fragment {
                 .navigate(R.id.action_noteFragment_to_noteListFragment));
     }
 
+    private static void makeVisible(View view) {
+        view.setVisibility(View.VISIBLE);
+        view.animate()
+                .translationY(0)
+                .setDuration(250)
+                .start();
+    }
+
+    private static void makeInvisible(View view, float offset) {
+        view.animate()
+                .translationY(offset)
+                .setDuration(250)
+                .withEndAction(() -> view.setVisibility(View.GONE))
+                .start();
+    }
+
+    private void makeFocusable(View view, boolean focusable) {
+        view.setFocusable(focusable);
+        view.setFocusableInTouchMode(focusable);
+        view.setScreenReaderFocusable(focusable);
+    }
+
+    private void fillNoteFromSnapshot(DocumentSnapshot result) {
+        content = result.getString("content");
+        markwon.setMarkdown(noteBinding.noteText, // sets up content
+                content != null ? content : "");
+        noteBinding.noteName.setText(NOTE_NAME);
+    }
+
     private void appendEditTextWith(String tag) {
-        String currentText = noteBinding.noteText.getText().toString();
+        Editable currentText = noteBinding.noteText.getText();
 
-        int cursorPos = noteBinding.noteText.getSelectionStart();
-        String textWithTag = new StringBuffer(currentText).insert(cursorPos, tag).toString();
+        int cursorStartPos = noteBinding.noteText.getSelectionStart();
+        int cursorEndPos = noteBinding.noteText.getSelectionEnd();
 
-        noteBinding.noteText.setText(textWithTag);
-        noteBinding.noteText.setSelection(cursorPos + tag.length());
+        if (cursorStartPos < 0 || cursorEndPos < 0) return;
+
+        String closeTag = "</" + tag.substring(1);
+
+        if (cursorStartPos == cursorEndPos) {
+            String beforeCursor = currentText.subSequence(0, cursorStartPos).toString();
+            int openCount = countOccurrences(beforeCursor, tag);
+            int closeCount = countOccurrences(beforeCursor, closeTag);
+            String tagToInsert = (openCount > closeCount) ? closeTag : tag;
+
+            currentText.insert(cursorStartPos, tagToInsert);
+            noteBinding.noteText.setSelection(cursorStartPos + tagToInsert.length());
+        } else {
+            currentText.insert(cursorEndPos, closeTag);
+            currentText.insert(cursorStartPos, tag);
+            noteBinding.noteText.setSelection(cursorStartPos + tag.length(), cursorEndPos + tag.length());
+        }
+    }
+
+    private int countOccurrences(String text, String target) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(target, index)) != -1) {
+            count++;
+            index += target.length();
+        }
+        return count;
     }
 
     @NonNull
@@ -247,7 +289,43 @@ public class NoteFragment extends Fragment {
         }
     }
 
-    private float dpToPx(float dp) {
-        return dp * getResources().getDisplayMetrics().density;
+    @Override
+    public void onPause() {
+        if (editing) contentTextWithTags = noteBinding.noteText.getText().toString();
+
+        // updating db
+        db.document(CONTENT_REFERENCE_PATH).set(new ContentEntity(contentTextWithTags))
+                .addOnSuccessListener(unused -> Log.d(TAG, "Saved content successfully"))
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Saving content failed: ", e);
+                    Toast.makeText(requireContext(), "Ошибка при сохранении: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+
+        String noteName = noteBinding.noteName.getText().toString();
+        String textWithMarkdown = markwon.toMarkdown(contentTextWithTags).toString();
+        String snippet = textWithMarkdown.substring(0, Math.min(textWithMarkdown.length(), NoteEntity.SNIPPET_LENGHT));
+        db.document(NOTE_REFERENCE_PATH).update(
+                NoteEntity.TITLE_FIELD, noteName,
+                NoteEntity.SNIPPET_FIELD, snippet,
+                NoteEntity.LAST_UPDATE_FIELD, Timestamp.now())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Log.d(TAG, "Updated note info successfully");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Saving content failed: ", e);
+                        Toast.makeText(requireContext(), "Ошибка при сохранении: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        super.onPause();
+    }
+
+    private static float dpToPx(float dp, Activity activity) {
+        return dp * activity.getResources().getDisplayMetrics().density;
     }
 }
