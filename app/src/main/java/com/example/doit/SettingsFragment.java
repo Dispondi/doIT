@@ -46,7 +46,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         navController = Navigation.findNavController(view);
 
         Button btn = new Button(requireContext());
-        btn.setText("Выйти из аккаунта");
+        btn.setText(R.string.account_leave_offer);
 
         ((LinearLayout) view).addView(btn);
         btn.setOnClickListener(v -> {
