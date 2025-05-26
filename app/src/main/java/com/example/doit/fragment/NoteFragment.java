@@ -1,4 +1,4 @@
-package com.example.doit;
+package com.example.doit.fragment;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,11 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.doit.R;
 import com.example.doit.databinding.FragmentNoteBinding;
 import com.example.doit.entity.ContentEntity;
 import com.example.doit.entity.NoteEntity;
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -31,8 +30,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
 
 import io.noties.markwon.Markwon;
 import io.noties.markwon.editor.MarkwonEditorTextWatcher;

@@ -1,6 +1,4 @@
-package com.example.doit;
-
-import static androidx.core.content.ContextCompat.getSystemService;
+package com.example.doit.fragment;
 
 import androidx.credentials.CredentialManager;
 
@@ -28,12 +26,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.doit.R;
 import com.example.doit.databinding.FragmentLoginBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,7 +45,6 @@ import androidx.navigation.Navigation;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-import java.util.Objects;
 import java.util.concurrent.Executors;
 
 public class LoginFragment extends Fragment {

@@ -1,8 +1,7 @@
-package com.example.doit;
+package com.example.doit.fragment;
 
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -16,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.doit.fragment.dialog.DeleteNoteDialog;
+import com.example.doit.R;
 import com.example.doit.databinding.FragmentNoteListBinding;
 import com.example.doit.entity.NoteEntity;
 import com.example.doit.entity.UserEntity;
@@ -23,7 +24,6 @@ import com.example.doit.recyclerview.NotesAdapter;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -33,8 +33,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import java.sql.Time;
 
 public class NoteListFragment extends Fragment {
 

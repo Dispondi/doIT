@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/noteListFragment"
-        android:name="com.example.doit.NoteListFragment"
+        android:name="com.example.doit.fragment.NoteListFragment"
         android:label="fragment_note_list"
         tools:layout="@layout/fragment_note_list" >
         <action
@@ -22,7 +22,7 @@
     </fragment>
     <fragment
         android:id="@+id/note_linear_layout"
-        android:name="com.example.doit.NoteFragment"
+        android:name="com.example.doit.fragment.NoteFragment"
         android:label="NoteFragment"
         tools:layout="@layout/fragment_note" >
         <action
@@ -31,7 +31,7 @@
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.doit.LoginFragment"
+        android:name="com.example.doit.fragment.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" >
         <action
@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/registrationFragment"
-        android:name="com.example.doit.RegistrationFragment"
+        android:name="com.example.doit.fragment.RegistrationFragment"
         android:label="fragment_registration"
         tools:layout="@layout/fragment_registration" >
         <action
@@ -59,7 +59,7 @@
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.example.doit.SettingsFragment"
+        android:name="com.example.doit.fragment.SettingsFragment"
         android:label="SettingsFragment" >
         <action
             android:id="@+id/action_settingsFragment_to_noteListFragment"

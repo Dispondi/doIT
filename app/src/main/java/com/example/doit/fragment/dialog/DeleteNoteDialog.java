@@ -1,4 +1,4 @@
-package com.example.doit;
+package com.example.doit.fragment.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+
+import com.example.doit.R;
 
 public class DeleteNoteDialog extends DialogFragment {
 
